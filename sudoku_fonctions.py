@@ -1,21 +1,6 @@
-# Fonctions Sudoku
+#sudoku_fonctions 
 from random import *
-
-NIVEAUX = {
-    1: [[1, 0, 0, 4],
-        [3, 4, 1, 0],
-        [0, 1, 4, 3],
-        [4, 0, 0, 1]],
-    2: [[1, 0, 0, 4],
-        [0, 4, 1, 0],
-        [0, 1, 4, 0],
-        [4, 0, 0, 1]],
-    3: [[0, 0, 0, 4],
-        [0, 4, 1, 0],
-        [0, 0, 4, 0],
-        [0, 0, 0, 1]]
-}
-
+import sudoku_bdd as bdd
 
 def affiche_grille(grille):
     print("\n    1 2   3 4")
@@ -117,7 +102,7 @@ def jouer_partie(niveau):
     """Gère la boucle principale d'une partie de Sudoku."""
     
     # Initialisation des grilles
-    grille_initiale = NIVEAUX[niveau]
+    grille_initiale = choice(bdd.NIVEAUX[niveau])
     grille = [ligne.copy() for ligne in grille_initiale]
     
     coups_valides = 0
@@ -166,18 +151,6 @@ def jouer_partie(niveau):
 
 # Deuxième implémentation
 
-# --- AJOUTS POUR LA PARTIE 2 ---
-
-GRILLE_DUEL = [[1, 0, 0, 4], 
-               [0, 4, 1, 0], 
-               [0, 1, 4, 0], 
-               [4, 0, 0, 1]]
-
-SOLUTION_DUEL = [[1, 2, 3, 4], 
-                 [3, 4, 1, 2], 
-                 [2, 3, 4, 1], 
-                 [4, 1, 2, 3]]
-
 def lst_cases_vides(grille) :
     n = len(grille)
     cases_vides = []
@@ -187,10 +160,19 @@ def lst_cases_vides(grille) :
                 cases_vides.append((i, j))
     return cases_vides
 
+def candidats(grille, ligne, colonne) :
+    candidats_possibles = []
+    for n in range(1, 5) :
+        if absent_ligne(grille, ligne, n) and absent_colonne(grille, colonne, n) and absent_bloc(grille, n, ligne, colonne) :
+            candidats_possibles.append(n)
+    return candidats_possibles
+
 def jouer_duel():
     """Gère la partie compétitive entre l'humain et la machine."""
-    grille = [ligne.copy() for ligne in GRILLE_DUEL]
-    grille_initiale = [ligne.copy() for ligne in GRILLE_DUEL]
+    grille_choisie, solution_choisie = choice(bdd.DUELS) 
+
+    grille = [ligne.copy() for ligne in grille_choisie]
+    grille_initiale = [ligne.copy() for ligne in grille_choisie]
     
     score_humain = 0
     score_machine = 0
@@ -218,7 +200,13 @@ def jouer_duel():
                 print("Coup incorrect, il s'agit d'une case fixe ! Vous passez votre tour.")
             elif not case_vide(grille, ligne, colonne) :
                 print("Coup incorrect, cette case est déjà remplie ! Vous passez votre tour.")
-            elif valeur == SOLUTION_DUEL[ligne][colonne] :
+            elif not absent_ligne(grille, ligne, valeur):
+                print("Coup incorrect, cette valeur est déjà dans la ligne ! Vous passez votre tour.")
+            elif not absent_colonne(grille, colonne, valeur):
+                print("Coup incorrect, cette valeur est déjà dans la colonne ! Vous passez votre tour.")
+            elif not absent_bloc(grille, valeur, ligne, colonne):
+                print("Coup incorrect, cette valeur est déjà dans le bloc ! Vous passez votre tour.")
+            elif valeur == solution_choisie[ligne][colonne] :
                 # C'est la bonne valeur !
                 print("Coup correct, vous gagnez 1 point !")
                 grille[ligne][colonne] = valeur
@@ -234,13 +222,11 @@ def jouer_duel():
             
             # Elle en choisit une au hasard
             choix_l, choix_c = choice(liste_cases_vides)
-            bonne_valeur = SOLUTION_DUEL[choix_l][choix_c]
-            
-            if random() < 0.8 : 
-                valeur_jouee = bonne_valeur
-            else :
-                # Choisir une valeur fausse parmi 1, 2, 3, 4
-                valeur_jouee = choice([v for v in range(1, 5) if v != bonne_valeur])
+            liste_candidats = candidats(grille, choix_l, choix_c)
+            if not liste_candidats:           # sécurité : aucune valeur possible
+                liste_candidats = [1, 2, 3, 4]
+            valeur_jouee = choice(liste_candidats)
+            bonne_valeur = solution_choisie[choix_l][choix_c]
             
             if valeur_jouee == bonne_valeur :
                 grille[choix_l][choix_c] = valeur_jouee
