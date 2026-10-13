@@ -1,4 +1,4 @@
-# Projet Python
+#sudoku_interface
 import sudoku_fonctions as sf
 
 print("Bienvenue")
@@ -35,4 +35,4 @@ while jouer.lower() == "oui" :
             print("Veuillez répondre par 'Oui' ou 'Non'.")
 
 
-    print("Au plaisir de vous retrouver pour une autre partie de sudoku !")
+print("Au plaisir de vous retrouver pour une autre partie de sudoku !")
